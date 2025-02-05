@@ -1,5 +1,11 @@
-from flask import Flask, jsonify, abort
+from flask import Flask, jsonify, abort, request
+import requests
 from typing import List, Dict, Any
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
@@ -49,6 +55,7 @@ def home() -> Dict[str, str]:
         'message': 'Welcome to the Books API',
         'available_endpoints': {
             'get_all_books': '/books',
+            'get_filtered_books': '/books?min_year=<year>&max_year=<year>&author=<name>',
             'get_book_by_id': '/books/<id>',
             'get_books_by_genre': '/genre/<genre>'
         }
@@ -56,8 +63,27 @@ def home() -> Dict[str, str]:
 
 @app.route('/books', methods=['GET'])
 def get_books() -> Dict[str, List]:
-    """Return all books"""
-    return jsonify({'books': books})
+    """Return books with optional filtering"""
+    # Get filter parameters
+    min_year = request.args.get('min_year', type=int)
+    max_year = request.args.get('max_year', type=int)
+    author = request.args.get('author')
+
+    logger.debug(f"Received filter parameters: author={author}, min_year={min_year}, max_year={max_year}")
+
+    filtered_books = books.copy()
+
+    # Apply filters if provided 
+    if min_year:
+        filtered_books = [b for b in filtered_books if b['publication_year'] >= min_year]
+    if max_year:
+        filtered_books = [b for b in filtered_books if b['publication_year'] <= max_year]
+    if author:
+        filtered_books = [b for b in filtered_books if author.lower() in b['author'].lower()]
+
+    logger.debug(f"Returning {len(filtered_books)} books after filtering")
+
+    return jsonify({'books': filtered_books})
 
 @app.route('/books/<int:book_id>', methods=['GET'])
 def get_book(book_id: int) -> Dict[str, Any]:

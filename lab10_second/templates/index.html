@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            padding: 8px;
+            width: 200px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .book {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Book Search</h1>
+    <form method="GET" action="/search">
+        <div class="form-group">
+            <label for="author">Author:</label>
+            <input type="text" id="author" name="author" value="{{ request.args.get('author', '') }}">
+        </div>
+        <div class="form-group">
+            <label for="min_year">Minimum Year:</label>
+            <input type="number" id="min_year" name="min_year" value="{{ request.args.get('min_year', '') }}">
+        </div>
+        <div class="form-group">
+            <label for="max_year">Maximum Year:</label>
+            <input type="number" id="max_year" name="max_year" value="{{ request.args.get('max_year', '') }}">
+        </div>
+        <button type="submit">Search</button>
+    </form>
+
+    {% if books %}
+        <h2>Results ({{ books|length }} books found)</h2>
+        {% for book in books %}
+            <div class="book">
+                <h3>{{ book.title }}</h3>
+                <p>Author: {{ book.author }}</p>
+                <p>Year: {{ book.publication_year }}</p>
+                <p>Genre: {{ book.genre }}</p>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+</body>
+</html>
